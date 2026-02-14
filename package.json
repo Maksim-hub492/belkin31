@@ -1,0 +1,13 @@
+{
+  "name": "vue-todo-app",
+  "version": "1.0.0",
+  "description": "Простое To-Do приложение на Vue.js",
+  "main": "index.html",
+  "scripts": {
+    "dev": "npx serve .",
+    "start": "npx serve ."
+  },
+  "devDependencies": {
+    "serve": "^14.2.5"
+  }
+}

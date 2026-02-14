@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To-Do List на Vue</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: white;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .input-section {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background: #45a049;
+        }
+
+        .filter-section {
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .filter-option {
+            padding: 5px 10px;
+            cursor: pointer;
+            margin: 0 5px;
+        }
+
+        .filter-option.active {
+            font-weight: bold;
+            color: #4CAF50;
+            text-decoration: underline;
+        }
+
+        .task-list {
+            list-style: none;
+        }
+
+        .task-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .task-item:last-child {
+            border-bottom: none;
+        }
+
+        .task-text {
+            flex: 1;
+            margin-left: 10px;
+        }
+
+        .completed {
+            text-decoration: line-through;
+            color: #888;
+        }
+
+        .delete-btn {
+            background: #f44336;
+            padding: 5px 10px;
+            font-size: 12px;
+        }
+
+        .delete-btn:hover {
+            background: #da190b;
+        }
+
+        .stats-section {
+            margin-top: 20px;
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #888;
+            margin-top: 20px;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div id="app" class="container">
+        <h1>My Tasks</h1>
+
+        <div class="input-section">
+            <input 
+                type="text" 
+                v-model="newTask" 
+                placeholder="Type your task here..."
+                @keyup.enter="addTask"
+            >
+            <button @click="addTask">Add</button>
+        </div>
+
+        <div class="filter-section">
+            <span 
+                class="filter-option" 
+                :class="{ active: filter === 'all' }"
+                @click="filterTasks('all')"
+            >All</span> |
+            <span 
+                class="filter-option" 
+                :class="{ active: filter === 'active' }"
+                @click="filterTasks('active')"
+            >Active</span> |
+            <span 
+                class="filter-option" 
+                :class="{ active: filter === 'completed' }"
+                @click="filterTasks('completed')"
+            >Completed</span>
+        </div>
+
+        <ul class="task-list">
+            <li 
+                v-for="(task, index) in filteredTasks" 
+                :key="index" 
+                class="task-item"
+            >
+                <input 
+                    type="checkbox" 
+                    v-model="task.completed"
+                >
+                <span 
+                    class="task-text" 
+                    :class="{ completed: task.completed }"
+                >
+                    {{ task.text }}
+                </span>
+                <button 
+                    class="delete-btn" 
+                    @click="deleteTask(index)"
+                >
+                    Delete
+                </button>
+            </li>
+        </ul>
+
+        <div v-if="tasks.length > 0" class="stats-section">
+            <p>Total tasks: {{ tasks.length }} | Completed: {{ completedTasksCount }}</p>
+        </div>
+
+        <div v-if="tasks.length === 0" class="empty-state">
+            No tasks to display!
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    
+    <script>
+        const { createApp } = Vue;
+        
+        createApp({
+            data() {
+                return {
+                    newTask: '',
+                    tasks: [
+                        { text: 'Learn React', completed: false },
+                        { text: 'Prototyping To-Do List', completed: true },
+                        { text: 'Push to Github', completed: false }
+                    ],
+                    filter: 'all'
+                }
+            },
+            
+            computed: {
+                filteredTasks() {
+                    switch(this.filter) {
+                        case 'active':
+                            return this.tasks.filter(task => !task.completed);
+                        case 'completed':
+                            return this.tasks.filter(task => task.completed);
+                        default:
+                            return this.tasks;
+                    }
+                },
+                
+                completedTasksCount() {
+                    return this.tasks.filter(task => task.completed).length;
+                }
+            },
+            
+            methods: {
+                addTask() {
+                    if (this.newTask.trim() !== '') {
+                        this.tasks.push({
+                            text: this.newTask.trim(),
+                            completed: false
+                        });
+                        this.newTask = '';
+                    }
+                },
+                
+                deleteTask(index) {
+                    this.tasks.splice(index, 1);
+                },
+                
+                filterTasks(filterType) {
+                    this.filter = filterType;
+                }
+            },
+            
+            mounted() {
+                const savedTasks = localStorage.getItem('todoTasks');
+                if (savedTasks) {
+                    this.tasks = JSON.parse(savedTasks);
+                }
+            },
+            
+            watch: {
+                tasks: {
+                    deep: true,
+                    handler(newTasks) {
+                        localStorage.setItem('todoTasks', JSON.stringify(newTasks));
+                    }
+                }
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>
